@@ -1,0 +1,65 @@
+{
+  "projectType": "api-service",
+  "projectName": "Cinefinder",
+  "projectDescription": "A Spring Boot REST API for managing movies, theater works, urban events, artists, and their participations.",
+  "theme": "mint",
+  "primaryColor": "#E50914",
+  "lightColor": "#FF6B6B",
+  "darkColor": "#B20710",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": ["introduction", "quickstart"]
+      },
+      {
+        "group": "Core Concepts",
+        "pages": ["core-concepts/architecture", "core-concepts/database-schema"]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api/peliculas",
+          "api/obras",
+          "api/eventos-urbanos",
+          "api/artistas",
+          "api/categorias",
+          "api/participaciones"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/authentication",
+          "guides/error-handling",
+          "guides/validation"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "RESTful API for cinema content management",
+    "Movie catalog with categories and synopsis",
+    "Theater works and urban events management",
+    "Artist profiles and participation tracking",
+    "MySQL database integration with JPA",
+    "Comprehensive exception handling"
+  ],
+  "publicApiSurface": [
+    "GET /peliculas - List all movies",
+    "GET /peliculas/{titulo} - Get movie by title",
+    "POST /peliculas - Create new movie",
+    "PUT /peliculas/{id} - Update movie",
+    "DELETE /peliculas/{id} - Delete movie",
+    "GET /obras - List all theater works",
+    "POST /obras - Create new theater work",
+    "GET /eventos-urbanos - List all urban events",
+    "POST /eventos-urbanos - Create new urban event",
+    "GET /artistas - List all artists",
+    "POST /artistas - Create new artist",
+    "GET /categorias - List all categories",
+    "POST /categorias - Create new category",
+    "GET /participaciones - List all participations",
+    "POST /participaciones - Create new participation"
+  ]
+}
