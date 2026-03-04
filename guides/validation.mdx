@@ -1,0 +1,537 @@
+---
+title: 'Validation'
+description: 'Learn how request validation works in the Cinefinder API'
+---
+
+## Overview
+
+The Cinefinder API uses **Jakarta Validation** (formerly known as Bean Validation) to ensure data integrity and consistency. The API includes the Jakarta Validation API dependency for validation support.
+
+## Current Validation Implementation
+
+Based on the source code analysis, validation is partially implemented in the codebase:
+
+### Dependencies
+
+The API includes Jakarta Validation API:
+
+```xml
+<dependency>
+    <groupId>jakarta.validation</groupId>
+    <artifactId>jakarta.validation-api</artifactId>
+    <version>3.0.2</version>
+</dependency>
+```
+
+<Note>
+The API includes the validation API but does **not** include a validation implementation like Hibernate Validator. For full validation support, consider adding:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+```
+</Note>
+
+## Validation in Entity Classes
+
+Some entity classes include Jakarta validation annotations:
+
+### Artistas Entity
+
+The `Artistas` entity (`model/Artistas.java:23-25`) includes validation on the `dni` field:
+
+```java
+@Entity
+@Table(name = "artistas")
+public class Artistas {
+    @Id
+    @NonNull
+    @NotNull
+    @NotBlank
+    @Valid
+    private Long dni;
+    
+    private String nombre;
+    private String apellido;
+    private String tipo;
+    private String descripcion;
+}
+```
+
+#### Validation Annotations Used
+
+<ResponseField name="@NotNull" type="annotation">
+  Ensures the field is not null. The `dni` field must be provided.
+</ResponseField>
+
+<ResponseField name="@NotBlank" type="annotation">
+  Ensures the string is not empty or only whitespace (Note: This is typically used for String fields, but applied to Long here)
+</ResponseField>
+
+<ResponseField name="@Valid" type="annotation">
+  Triggers validation of nested objects
+</ResponseField>
+
+<ResponseField name="@NonNull" type="annotation">
+  Lombok annotation ensuring the field is not null at construction time
+</ResponseField>
+
+## DTO Classes
+
+Currently, DTOs use Java records without validation annotations:
+
+### PeliculasDto
+
+```java
+public record PeliculasDto(
+    Integer id,
+    String titulo,
+    String sipnosis,
+    Integer duracion,
+    Integer categoria_id
+) {}
+```
+
+### CategoriasDto
+
+```java
+public record CategoriasDto(
+    Integer id,
+    String nombre
+) {}
+```
+
+### ArtistasDto
+
+```java
+public record ArtistasDto(
+    Long dni,
+    String nombre,
+    String apellido,
+    String tipo,
+    String descripcion
+) {}
+```
+
+## Recommended Validation Implementation
+
+To enable comprehensive validation, we recommend adding validation annotations to DTOs:
+
+### Enhanced PeliculasDto
+
+```java
+import jakarta.validation.constraints.*;
+
+public record PeliculasDto(
+    Integer id,
+    
+    @NotBlank(message = "El título es obligatorio")
+    @Size(min = 1, max = 255, message = "El título debe tener entre 1 y 255 caracteres")
+    String titulo,
+    
+    @NotBlank(message = "La sipnosis es obligatoria")
+    @Size(max = 1000, message = "La sipnosis no puede exceder 1000 caracteres")
+    String sipnosis,
+    
+    @NotNull(message = "La duración es obligatoria")
+    @Positive(message = "La duración debe ser positiva")
+    @Max(value = 600, message = "La duración no puede exceder 600 minutos")
+    Integer duracion,
+    
+    @NotNull(message = "La categoría es obligatoria")
+    @Positive(message = "El ID de categoría debe ser positivo")
+    Integer categoria_id
+) {}
+```
+
+### Enhanced CategoriasDto
+
+```java
+import jakarta.validation.constraints.*;
+
+public record CategoriasDto(
+    Integer id,
+    
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
+    String nombre
+) {}
+```
+
+### Enhanced ArtistasDto
+
+```java
+import jakarta.validation.constraints.*;
+
+public record ArtistasDto(
+    @NotNull(message = "El DNI es obligatorio")
+    @Positive(message = "El DNI debe ser positivo")
+    Long dni,
+    
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
+    String nombre,
+    
+    @NotBlank(message = "El apellido es obligatorio")
+    @Size(min = 2, max = 100, message = "El apellido debe tener entre 2 y 100 caracteres")
+    String apellido,
+    
+    @NotBlank(message = "El tipo es obligatorio")
+    @Pattern(regexp = "^(Actor|Director|Productor)$", 
+             message = "El tipo debe ser: Actor, Director o Productor")
+    String tipo,
+    
+    @Size(max = 500, message = "La descripción no puede exceder 500 caracteres")
+    String descripcion
+) {}
+```
+
+## Common Validation Annotations
+
+### Basic Constraints
+
+<AccordionGroup>
+  <Accordion title="@NotNull">
+    Validates that the field is not null.
+    
+    ```java
+    @NotNull(message = "Este campo es obligatorio")
+    private Integer campo;
+    ```
+  </Accordion>
+
+  <Accordion title="@NotBlank">
+    Validates that a string is not null, not empty, and not only whitespace.
+    
+    ```java
+    @NotBlank(message = "El texto no puede estar vacío")
+    private String texto;
+    ```
+  </Accordion>
+
+  <Accordion title="@NotEmpty">
+    Validates that a string, collection, map, or array is not null and not empty.
+    
+    ```java
+    @NotEmpty(message = "La lista no puede estar vacía")
+    private List<String> items;
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Size Constraints
+
+<AccordionGroup>
+  <Accordion title="@Size">
+    Validates the size of a string, collection, map, or array.
+    
+    ```java
+    @Size(min = 2, max = 100, message = "Debe tener entre 2 y 100 caracteres")
+    private String nombre;
+    ```
+  </Accordion>
+
+  <Accordion title="@Min / @Max">
+    Validates that a numeric value is greater than or equal to / less than or equal to a specified value.
+    
+    ```java
+    @Min(value = 0, message = "Debe ser mayor o igual a 0")
+    @Max(value = 100, message = "Debe ser menor o igual a 100")
+    private Integer edad;
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Numeric Constraints
+
+<AccordionGroup>
+  <Accordion title="@Positive / @PositiveOrZero">
+    Validates that a numeric value is positive (or zero).
+    
+    ```java
+    @Positive(message = "Debe ser un número positivo")
+    private Integer cantidad;
+    
+    @PositiveOrZero(message = "Debe ser cero o positivo")
+    private Integer stock;
+    ```
+  </Accordion>
+
+  <Accordion title="@Negative / @NegativeOrZero">
+    Validates that a numeric value is negative (or zero).
+    
+    ```java
+    @Negative(message = "Debe ser un número negativo")
+    private Integer deuda;
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Pattern Constraints
+
+<AccordionGroup>
+  <Accordion title="@Pattern">
+    Validates that a string matches a regular expression.
+    
+    ```java
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@(.+)$", 
+             message = "Formato de email inválido")
+    private String email;
+    
+    @Pattern(regexp = "^\\d{8}$", 
+             message = "El DNI debe tener 8 dígitos")
+    private String dni;
+    ```
+  </Accordion>
+
+  <Accordion title="@Email">
+    Validates that a string is a valid email address.
+    
+    ```java
+    @Email(message = "Debe ser un email válido")
+    private String email;
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Enabling Validation in Controllers
+
+To enable validation, add `@Valid` or `@Validated` to controller method parameters:
+
+### Current Implementation
+
+```java
+@RestController
+@RequestMapping("/peliculas")
+public class PeliculasController {
+    
+    @PostMapping
+    public ResponseEntity<PeliculasDto> guardar(@RequestBody PeliculasDto dto) {
+        PeliculasDto creada = peliculasServices.guardar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+    }
+}
+```
+
+### Recommended Implementation
+
+```java
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/peliculas")
+public class PeliculasController {
+    
+    @PostMapping
+    public ResponseEntity<PeliculasDto> guardar(
+        @Valid @RequestBody PeliculasDto dto
+    ) {
+        PeliculasDto creada = peliculasServices.guardar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<PeliculasDto> actualizar(
+        @PathVariable Integer id,
+        @Valid @RequestBody PeliculasDto dto
+    ) {
+        return ResponseEntity.ok(peliculasServices.actualizar(id, dto));
+    }
+}
+```
+
+## Validation Error Responses
+
+When validation fails, Spring automatically returns a 400 Bad Request response. To customize error responses, add a handler to `GlobalExceptionHandler`:
+
+```java
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.FieldError;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationErrors(
+        MethodArgumentNotValidException ex,
+        WebRequest request
+    ) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        
+        ErrorResponse error = ErrorResponse.builder()
+            .code(String.valueOf(HttpStatus.BAD_REQUEST))
+            .details("Errores de validación: " + errors.toString())
+            .location(request.getDescription(true))
+            .moreInfo("Verifique los datos enviados")
+            .timestamp(LocalDateTime.now())
+            .build();
+        
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+}
+```
+
+### Validation Error Response Example
+
+**Request:**
+```bash
+curl -X POST "http://localhost:8080/peliculas" \
+  -H "Content-Type: application/json" \
+  -d '{"titulo":"","duracion":-10}'
+```
+
+**Response (400):**
+```json
+{
+  "type": "error",
+  "code": "400",
+  "details": "Errores de validación: {titulo=El título es obligatorio, sipnosis=La sipnosis es obligatoria, duracion=La duración debe ser positiva, categoria_id=La categoría es obligatoria}",
+  "location": "uri=/peliculas",
+  "moreInfo": "Verifique los datos enviados",
+  "timestamp": "2026-03-04T10:30:45.123"
+}
+```
+
+## Custom Validators
+
+You can create custom validation annotations for complex business rules:
+
+```java
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = TituloUnicoValidator.class)
+public @interface TituloUnico {
+    String message() default "El título ya existe";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}
+```
+
+```java
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+
+public class TituloUnicoValidator 
+    implements ConstraintValidator<TituloUnico, String> {
+    
+    @Autowired
+    private PeliculasRepository repository;
+    
+    @Override
+    public boolean isValid(String titulo, 
+                          ConstraintValidatorContext context) {
+        if (titulo == null) return true;
+        return !repository.existsByTitulo(titulo);
+    }
+}
+```
+
+Use it in your DTO:
+
+```java
+public record PeliculasDto(
+    Integer id,
+    
+    @NotBlank
+    @TituloUnico(message = "Ya existe una película con este título")
+    String titulo,
+    
+    // ... other fields
+) {}
+```
+
+## Validation Groups
+
+Use validation groups to apply different validation rules for different scenarios:
+
+```java
+public interface CreateValidation {}
+public interface UpdateValidation {}
+
+public record PeliculasDto(
+    @Null(groups = CreateValidation.class, 
+          message = "El ID debe ser nulo al crear")
+    @NotNull(groups = UpdateValidation.class, 
+             message = "El ID es obligatorio al actualizar")
+    Integer id,
+    
+    @NotBlank(groups = {CreateValidation.class, UpdateValidation.class})
+    String titulo
+) {}
+```
+
+Use in controller:
+
+```java
+@PostMapping
+public ResponseEntity<PeliculasDto> crear(
+    @Validated(CreateValidation.class) @RequestBody PeliculasDto dto
+) {
+    // ...
+}
+
+@PutMapping("/{id}")
+public ResponseEntity<PeliculasDto> actualizar(
+    @PathVariable Integer id,
+    @Validated(UpdateValidation.class) @RequestBody PeliculasDto dto
+) {
+    // ...
+}
+```
+
+## Best Practices
+
+<Tip>
+**Validate at the controller level** using `@Valid` or `@Validated` to catch errors early before they reach your service layer.
+</Tip>
+
+<Tip>
+**Use meaningful error messages** that help users understand what went wrong and how to fix it.
+</Tip>
+
+<Tip>
+**Combine validation annotations** with business logic validation in your service layer for comprehensive validation.
+</Tip>
+
+<Warning>
+Don't rely solely on client-side validation. Always validate on the server side to ensure data integrity.
+</Warning>
+
+## Summary
+
+The Cinefinder API includes Jakarta Validation API support but has limited validation implementation:
+
+- ✅ Jakarta Validation API dependency included
+- ✅ Some validation annotations on entity classes
+- ❌ No validation on DTOs (Java records)
+- ❌ No `@Valid` annotations on controller parameters
+- ❌ No validation error handling in `GlobalExceptionHandler`
+
+### Recommendations
+
+1. Add `spring-boot-starter-validation` dependency
+2. Add validation annotations to all DTOs
+3. Use `@Valid` on controller method parameters
+4. Implement validation error handling in `GlobalExceptionHandler`
+5. Consider custom validators for complex business rules
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/guides/error-handling">
+    Learn how errors are handled in the API
+  </Card>
+  <Card title="Authentication" icon="shield" href="/guides/authentication">
+    Understand authentication (future implementation)
+  </Card>
+</CardGroup>

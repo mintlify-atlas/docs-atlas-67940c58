@@ -1,0 +1,143 @@
+---
+title: Introduction
+description: Welcome to Cinefinder API - A comprehensive REST API for managing movies, theater works, artists, and urban cultural events
+---
+
+# Introduction to Cinefinder API
+
+Cinefinder is a robust RESTful API designed to manage and discover cultural content including movies, theater works, artists, and urban events. Built with modern Java technologies, it provides a complete backend solution for cultural content management platforms.
+
+## What is Cinefinder?
+
+Cinefinder API enables you to:
+
+- **Manage Movies (Peliculas)**: Create, read, update, and delete movie records with complete metadata including synopsis, duration, and categories
+- **Handle Theater Works (Obras)**: Organize theatrical performances and shows with detailed descriptions and scheduling
+- **Track Artists (Artistas)**: Maintain a database of actors, singers, dancers, and other performers with their profiles
+- **Organize Urban Events (Eventos Urbanos)**: Coordinate street performances, festivals, and cultural events
+- **Categorize Content**: Classify all content types using a flexible category system
+- **Link Participations**: Connect artists to their roles in movies, works, and events
+
+## Key Features
+
+### RESTful Architecture
+Fully RESTful API with intuitive endpoints following industry best practices:
+- Resource-based URLs (`/peliculas`, `/artistas`, `/eventosUrbanos`)
+- Standard HTTP methods (GET, POST, PUT, DELETE)
+- Proper HTTP status codes (200, 201, 404, etc.)
+- JSON request/response format
+
+### Complete CRUD Operations
+Every resource supports full Create, Read, Update, and Delete operations:
+```java
+GET    /peliculas           // List all movies
+GET    /peliculas/{titulo}  // Get movie by title
+POST   /peliculas           // Create new movie
+PUT    /peliculas/{id}      // Update movie
+DELETE /peliculas/{id}      // Delete movie
+```
+
+### Flexible Search & Filtering
+Search resources by various criteria:
+- Movies by title
+- Artists by DNI (national ID)
+- Categories by name
+- Events by title
+
+### Relational Data Management
+Proper handling of relationships between entities:
+- Movies, works, and events linked to categories
+- Artists connected to their participations
+- Foreign key constraints ensuring data integrity
+
+## Tech Stack
+
+Cinefinder API is built with modern, enterprise-grade technologies:
+
+### Core Framework
+- **Spring Boot 3.5.5**: Latest version of the leading Java application framework
+- **Java 21**: Modern Java with latest language features and performance improvements
+- **Spring Web**: RESTful web services and MVC architecture
+- **Spring Boot DevTools**: Enhanced development experience with automatic restarts
+
+### Data Layer
+- **Spring Data JPA**: Simplified database access with Java Persistence API
+- **Hibernate**: Robust ORM (Object-Relational Mapping) implementation
+- **MySQL 8.4.0**: Reliable relational database for data persistence
+- **JDBC**: MySQL Connector for database connectivity
+
+### Developer Tools
+- **Lombok**: Reduces boilerplate code with annotations
+- **Jakarta Validation API 3.0.2**: Bean validation for request data
+- **Maven**: Dependency management and build automation
+- **JUnit Jupiter 5.10.0**: Modern testing framework
+
+### Architecture Patterns
+- **DTO Pattern**: Clean separation between entities and API contracts
+- **Service Layer**: Business logic encapsulation
+- **Repository Pattern**: Data access abstraction
+- **Exception Handling**: Global exception handling with custom exceptions
+
+## API Resources
+
+The API provides the following main resources:
+
+### Peliculas (Movies)
+Manage movie catalog with titles, synopsis, duration, and genre categories.
+
+### Artistas (Artists)
+Track performers including actors, singers, dancers, and other artists with their profiles.
+
+### Eventos Urbanos (Urban Events)
+Coordinate street performances, festivals, and cultural events with dates and locations.
+
+### Obras (Theater Works)
+Organize theatrical performances and stage productions.
+
+### Categorias (Categories)
+Classification system for movies, events, and works (Action, Comedy, Drama, etc.).
+
+### Participaciones (Participations)
+Link artists to movies, works, or events they participate in.
+
+## Database Schema
+
+Cinefinder uses a well-structured MySQL database with the following main tables:
+
+- `peliculas`: Movie records with foreign key to categories
+- `artistas`: Artist profiles with DNI as primary key
+- `eventos_urbanos`: Urban events with dates and locations
+- `obras`: Theater works catalog
+- `categorias`: Content classification
+- `participaciones`: Junction table linking artists to content
+
+All tables include proper constraints, foreign keys, and cascading rules to maintain referential integrity.
+
+## Response Format
+
+All API responses use JSON format with consistent structure:
+
+### Success Response
+```json
+{
+  "id": 1,
+  "titulo": "El Último Viaje",
+  "sipnosis": "Una odisea espacial más allá del sistema solar",
+  "duracion": 120,
+  "categoria_id": 5
+}
+```
+
+### Error Response
+```json
+{
+  "details": "Resource not found",
+  "location": "/peliculas/999"
+}
+```
+
+## Next Steps
+
+Ready to start using Cinefinder API? Check out our [Quickstart Guide](/quickstart) to set up the application and make your first API calls.
+
+For detailed endpoint documentation, explore the [API Reference](/api/peliculas) section.

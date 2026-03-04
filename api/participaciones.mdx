@@ -1,0 +1,273 @@
+---
+title: "Participaciones API"
+description: "API endpoints for managing participations (participaciones) linking artists to events in the Cinefinder application"
+---
+
+The Participaciones API allows you to create, read, update, and delete participation records that link artists to events in the Cinefinder system.
+
+## Get All Participations
+
+<CodeGroup>
+```bash cURL
+curl -X GET http://localhost:8080/participaciones
+```
+</CodeGroup>
+
+Retrieves a list of all participations in the system.
+
+### Response
+
+<ResponseField name="[]" type="array">
+  Array of participation objects
+  
+  <Expandable title="Participation Object">
+    <ResponseField name="id" type="integer">
+      Unique identifier for the participation
+    </ResponseField>
+    
+    <ResponseField name="artistas_dni" type="long">
+      DNI of the artist participating in the event
+    </ResponseField>
+    
+    <ResponseField name="tipo_evento" type="string">
+      Type of event (e.g., "pelicula", "obra", "eventoUrbano")
+    </ResponseField>
+    
+    <ResponseField name="evento_id" type="integer">
+      ID of the event the artist is participating in
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Response Example
+
+```json
+[
+  {
+    "id": 1,
+    "artistas_dni": 12345678,
+    "tipo_evento": "pelicula",
+    "evento_id": 5
+  }
+]
+```
+
+---
+
+## Get Participation by Event Type
+
+<CodeGroup>
+```bash cURL
+curl -X GET http://localhost:8080/participaciones/{tipo_evento}
+```
+</CodeGroup>
+
+Retrieves a specific participation by event type.
+
+### Path Parameters
+
+<ParamField path="tipo_evento" type="string" required>
+  The type of event to filter participations (e.g., "pelicula", "obra", "eventoUrbano")
+</ParamField>
+
+### Response
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the participation
+</ResponseField>
+
+<ResponseField name="artistas_dni" type="long">
+  DNI of the artist participating in the event
+</ResponseField>
+
+<ResponseField name="tipo_evento" type="string">
+  Type of event
+</ResponseField>
+
+<ResponseField name="evento_id" type="integer">
+  ID of the event the artist is participating in
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "id": 1,
+  "artistas_dni": 12345678,
+  "tipo_evento": "pelicula",
+  "evento_id": 5
+}
+```
+
+---
+
+## Create Participation
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://localhost:8080/participaciones \
+  -H "Content-Type: application/json" \
+  -d '{
+    "artistas_dni": 87654321,
+    "tipo_evento": "obra",
+    "evento_id": 12
+  }'
+```
+</CodeGroup>
+
+Creates a new participation record linking an artist to an event.
+
+### Request Body
+
+<ParamField body="artistas_dni" type="long" required>
+  DNI of the artist participating in the event
+</ParamField>
+
+<ParamField body="tipo_evento" type="string" required>
+  Type of event (e.g., "pelicula", "obra", "eventoUrbano")
+</ParamField>
+
+<ParamField body="evento_id" type="integer" required>
+  ID of the event the artist is participating in
+</ParamField>
+
+### Response
+
+Returns the created participation object with HTTP status 201 (Created).
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the newly created participation
+</ResponseField>
+
+<ResponseField name="artistas_dni" type="long">
+  DNI of the artist participating in the event
+</ResponseField>
+
+<ResponseField name="tipo_evento" type="string">
+  Type of event
+</ResponseField>
+
+<ResponseField name="evento_id" type="integer">
+  ID of the event the artist is participating in
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "id": 2,
+  "artistas_dni": 87654321,
+  "tipo_evento": "obra",
+  "evento_id": 12
+}
+```
+
+---
+
+## Update Participation
+
+<CodeGroup>
+```bash cURL
+curl -X PUT http://localhost:8080/participaciones/{id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "artistas_dni": 87654321,
+    "tipo_evento": "obra",
+    "evento_id": 15
+  }'
+```
+</CodeGroup>
+
+Updates an existing participation record.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the participation to update
+</ParamField>
+
+### Request Body
+
+<ParamField body="artistas_dni" type="long" required>
+  DNI of the artist participating in the event
+</ParamField>
+
+<ParamField body="tipo_evento" type="string" required>
+  Type of event (e.g., "pelicula", "obra", "eventoUrbano")
+</ParamField>
+
+<ParamField body="evento_id" type="integer" required>
+  ID of the event the artist is participating in
+</ParamField>
+
+### Response
+
+Returns the updated participation object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the participation
+</ResponseField>
+
+<ResponseField name="artistas_dni" type="long">
+  DNI of the artist participating in the event
+</ResponseField>
+
+<ResponseField name="tipo_evento" type="string">
+  Type of event
+</ResponseField>
+
+<ResponseField name="evento_id" type="integer">
+  ID of the event the artist is participating in
+</ResponseField>
+
+---
+
+## Delete Participation
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE http://localhost:8080/participaciones/{id}
+```
+</CodeGroup>
+
+Deletes a participation record from the system.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the participation to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="type" type="string">
+  Response type, always "Success"
+</ResponseField>
+
+<ResponseField name="code" type="string">
+  HTTP status code (200)
+</ResponseField>
+
+<ResponseField name="details" type="string">
+  Success message with the deleted participation ID
+</ResponseField>
+
+<ResponseField name="location" type="string">
+  Request URI that was called
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Timestamp of the operation
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "type": "Success",
+  "code": "200",
+  "details": "la participación con el id: 1. fue eliminada correctamente.",
+  "location": "/participaciones/1",
+  "timestamp": "2026-03-04T10:30:00"
+}
+```

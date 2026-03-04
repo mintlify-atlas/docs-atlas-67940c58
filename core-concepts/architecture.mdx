@@ -1,0 +1,382 @@
+---
+title: 'Architecture'
+description: 'Understand the Spring Boot architecture and design patterns used in Cinefinder API'
+---
+
+## Overview
+
+Cinefinder API is built using Spring Boot and follows a clean, layered architecture based on the **Controller-Service-Repository** pattern. This design ensures separation of concerns, maintainability, and scalability.
+
+## Architectural Layers
+
+### 1. Controller Layer
+
+The controller layer handles HTTP requests and responses. Controllers are responsible for:
+- Receiving client requests
+- Validating input
+- Delegating business logic to services
+- Returning appropriate HTTP responses
+
+**Example: PeliculasController**
+
+```java
+@RequestMapping("/peliculas")
+@RequiredArgsConstructor
+@RestController
+public class PeliculasController {
+    private final PeliculasServices peliculasServices;
+
+    @GetMapping
+    public List<PeliculasDto> consultar(){
+        return peliculasServices.consultar();
+    }
+
+    @PostMapping()
+    public ResponseEntity<PeliculasDto> guardar(@RequestBody PeliculasDto dto){
+        PeliculasDto creada = peliculasServices.guardar(dto);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(creada);
+    }
+}
+```
+
+**Key Controllers:**
+- `PeliculasController` - src/main/java/com/trainee/Cinefinder/controller/PeliculasController.java:19
+- `ObrasController` - src/main/java/com/trainee/Cinefinder/controller/ObrasController.java
+- `EventosUrbanosController` - src/main/java/com/trainee/Cinefinder/controller/EventosUrbanosController.java
+- `ArtistasController` - src/main/java/com/trainee/Cinefinder/controller/ArtistasController.java
+- `CategoriasController` - src/main/java/com/trainee/Cinefinder/controller/CategoriasController.java
+- `ParticipacionesController` - src/main/java/com/trainee/Cinefinder/controller/ParticipacionesController.java
+
+### 2. Service Layer
+
+The service layer contains business logic and orchestrates operations between controllers and repositories.
+
+**Interface Pattern:**
+
+All services implement a base `CrudServices` interface:
+
+```java
+public interface CrudServices<T, ID> {
+    List<T> consultar();
+    T guardar(T dto);
+    T actualizar(ID id, T dto);
+    Void eliminar(ID id);
+}
+```
+
+**Example: PeliculasServices Implementation**
+
+```java
+@Service
+@RequiredArgsConstructor
+public class PeliculasServicesImpl implements PeliculasServices {
+    private final PeliculaRepository peliculasRepositorio;
+    private final CategoriaRepository categoriasRespositorio;
+
+    @Override
+    public PeliculasDto guardar(PeliculasDto dto) {
+        Optional<Peliculas> existente = peliculasRepositorio.findByTitulo(dto.titulo());
+        if (existente.isPresent()){
+            throw new PeliculaTituloYaExistenteException(dto.titulo());
+        }
+        Peliculas pelicula = PeliculasMapper.peliculasToEntity(dto);
+        pelicula = peliculasRepositorio.save(pelicula);
+        return PeliculasMapper.peliculasToDto(pelicula);
+    }
+}
+```
+
+**Key Services:**
+- `PeliculasServicesImpl` - src/main/java/com/trainee/Cinefinder/service/impl/PeliculasServicesImpl.java:22
+- `ObrasServicesImpl` - src/main/java/com/trainee/Cinefinder/service/impl/ObrasServicesImpl.java
+- `EventosUrbanosServicesImpl` - src/main/java/com/trainee/Cinefinder/service/impl/EventosUrbanosServicesImpl.java
+- `ArtistasServicesImpl` - src/main/java/com/trainee/Cinefinder/service/impl/ArtistasServicesImpl.java
+- `CategoriasServicesImpl` - src/main/java/com/trainee/Cinefinder/service/impl/CategoriasServicesImpl.java
+- `ParticipacionesServicesImpl` - src/main/java/com/trainee/Cinefinder/service/impl/ParticipacionesServicesImpl.java
+
+### 3. Repository Layer
+
+The repository layer provides data access using Spring Data JPA. Repositories extend `JpaRepository` to inherit common CRUD operations.
+
+**Example: PeliculaRepository**
+
+```java
+@Repository
+public interface PeliculaRepository extends JpaRepository<Peliculas, Integer> {
+    @Query("SELECT p FROM Peliculas p WHERE p.titulo = :titulo")
+    Optional<Peliculas> findByTitulo (String titulo);
+}
+```
+
+**Key Repositories:**
+- `PeliculaRepository` - src/main/java/com/trainee/Cinefinder/repository/PeliculaRepository.java:11
+- `ObraRepository` - src/main/java/com/trainee/Cinefinder/repository/ObraRepository.java
+- `EventoUrbanoRepository` - src/main/java/com/trainee/Cinefinder/repository/EventoUrbanoRepository.java
+- `ArtistaRepository` - src/main/java/com/trainee/Cinefinder/repository/ArtistaRepository.java
+- `CategoriaRepository` - src/main/java/com/trainee/Cinefinder/repository/CategoriaRepository.java
+- `ParticipacionRepository` - src/main/java/com/trainee/Cinefinder/repository/ParticipacionRepository.java
+
+## Data Transfer Objects (DTOs)
+
+DTOs are used to transfer data between layers and provide a clean API contract.
+
+**Example: PeliculasDto**
+
+```java
+public record PeliculasDto(
+        Integer id,
+        String titulo,
+        String sipnosis,
+        Integer duracion,
+        Integer categoria_id
+) {}
+```
+
+**Available DTOs:**
+- `PeliculasDto` - src/main/java/com/trainee/Cinefinder/model/dto/PeliculasDto.java:3
+- `ObrasDto` - src/main/java/com/trainee/Cinefinder/model/dto/ObrasDto.java
+- `EventosUrbanosDto` - src/main/java/com/trainee/Cinefinder/model/dto/EventosUrbanosDto.java
+- `ArtistasDto` - src/main/java/com/trainee/Cinefinder/model/dto/ArtistasDto.java
+- `CategoriasDto` - src/main/java/com/trainee/Cinefinder/model/dto/CategoriasDto.java
+- `ParticipacionesDto` - src/main/java/com/trainee/Cinefinder/model/dto/ParticipacionesDto.java
+- `ErrorResponse` - src/main/java/com/trainee/Cinefinder/model/dto/ErrorResponse.java:14
+- `SuccessResponse` - src/main/java/com/trainee/Cinefinder/model/dto/SuccessResponse.java
+
+## Entity Models
+
+Entity models represent database tables using JPA annotations.
+
+**Example: Peliculas Entity**
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Builder
+@Table (name = "peliculas")
+public class Peliculas {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column (name = "id")
+    private Integer id;
+    
+    @Column (name = "titulo")
+    private String titulo;
+    
+    @Column (name = "sipnosis")
+    private String sipnosis;
+    
+    @Column (name = "duracion")
+    private Integer duracion;
+    
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categorias categorias_id;
+}
+```
+
+**Key Entities:**
+- `Peliculas` - src/main/java/com/trainee/Cinefinder/model/Peliculas.java:13
+- `Obras` - src/main/java/com/trainee/Cinefinder/model/Obras.java:13
+- `EventosUrbanos` - src/main/java/com/trainee/Cinefinder/model/EventosUrbanos.java:15
+- `Artistas` - src/main/java/com/trainee/Cinefinder/model/Artistas.java:19
+- `Categorias` - src/main/java/com/trainee/Cinefinder/model/Categorias.java:12
+- `Participaciones` - src/main/java/com/trainee/Cinefinder/model/Participaciones.java:16
+
+## Mappers
+
+Mappers convert between entities and DTOs.
+
+**Example: PeliculasMapper**
+
+```java
+@Component
+public class PeliculasMapper {
+    public static PeliculasDto peliculasToDto (Peliculas peliculas){
+        return new PeliculasDto(
+                peliculas.getId(),
+                peliculas.getTitulo(),
+                peliculas.getSipnosis(),
+                peliculas.getDuracion(),
+                peliculas.getCategorias_id().getId()
+        );
+    }
+
+    public static Peliculas peliculasToEntity (PeliculasDto peliculasToDto){
+        Peliculas peliculas = new Peliculas();
+        peliculas.setId(peliculasToDto.id());
+        peliculas.setTitulo(peliculasToDto.titulo());
+        peliculas.setSipnosis(peliculasToDto.sipnosis());
+        peliculas.setDuracion(peliculasToDto.duracion());
+        
+        Categorias categoria = new Categorias();
+        categoria.setId(peliculasToDto.categoria_id());
+        peliculas.setCategorias_id(categoria);
+        
+        return peliculas;
+    }
+}
+```
+
+**Available Mappers:**
+- `PeliculasMapper` - src/main/java/com/trainee/Cinefinder/mapper/PeliculasMapper.java:9
+- `ObrasMapper` - src/main/java/com/trainee/Cinefinder/mapper/ObrasMapper.java
+- `EventosUrbanosMapper` - src/main/java/com/trainee/Cinefinder/mapper/EventosUrbanosMapper.java
+- `ArtistasMapper` - src/main/java/com/trainee/Cinefinder/mapper/ArtistasMapper.java
+- `CategoriasMapper` - src/main/java/com/trainee/Cinefinder/mapper/CategoriasMapper.java
+- `ParticipacionesMapper` - src/main/java/com/trainee/Cinefinder/mapper/ParticipacionesMapper.java
+
+## Exception Handling
+
+Cinefinder uses a centralized exception handling mechanism with `@RestControllerAdvice`.
+
+### Exception Hierarchy
+
+**Base Exceptions:**
+- `ExcepcionDeNegocio` - Base exception for business logic errors
+- `RecursoNoEncontradoException` - Thrown when a resource is not found (404)
+- `ValidacionException` - Thrown for validation errors
+
+**Domain-Specific Exceptions:**
+
+**Peliculas:**
+- `PeliculaTituloYaExistenteException`
+- `PeliculaNoActualizadaException`
+- `PeliculaNoEliminadaException`
+
+**Obras:**
+- `ObraTituloYaExistenteException`
+- `ObraNoActualizadaException`
+- `ObraNoEliminadaException`
+
+**Eventos Urbanos:**
+- `EventoUrbanoTituloYaExistenteException`
+- `EventoUrbanoNoActualizadaException`
+- `EventoUrbanoNoEliminadaException`
+
+**Artistas:**
+- `ArtistaYaRegistradoException`
+- `ArtistaNoActualizadoException`
+- `ArtistaNoEliminadoException`
+
+**Categorias:**
+- `CategoriaNombreYaExistenteException`
+- `CategoriaNoActualizadaException`
+- `CategoriaNoEliminadaException`
+
+**Participaciones:**
+- `ParticipacionYaRegistradoException`
+- `ParticipacionNoActualizadaException`
+- `ParticipacionNoEliminadaException`
+
+### Global Exception Handler
+
+The `GlobalExceptionHandler` class intercepts exceptions and returns standardized error responses.
+
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RecursoNoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handlerRecursoNoEncontrado(
+            RecursoNoEncontradoException ex, WebRequest request) {
+        ErrorResponse error = ErrorResponse.builder()
+                .code(String.valueOf(HttpStatus.NOT_FOUND))
+                .details(ex.getMessage())
+                .location(request.getDescription(true))
+                .moreInfo("No se encontró en la ruta: " + 
+                    request.getDescription(false).replace("uri=", ""))
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneralException(
+            Exception ex, WebRequest request) {
+        ErrorResponse error = ErrorResponse.builder()
+                .code("500")
+                .details(ex.getMessage())
+                .location(request.getDescription(false))
+                .moreInfo("Ocurrió un error inesperado")
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+```
+
+**Error Response Structure:**
+
+```json
+{
+  "type": "error",
+  "code": "404",
+  "details": "Pelicula con el titulo: Unknown no se encuentra.",
+  "location": "/peliculas/Unknown",
+  "moreInfo": "No se encontró en la ruta: /peliculas/Unknown",
+  "timestamp": "2026-03-04T10:30:00"
+}
+```
+
+## Application Entry Point
+
+The main Spring Boot application class:
+
+```java
+@SpringBootApplication
+@EnableJpaRepositories
+public class CinefinderApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(CinefinderApplication.class, args);
+    }
+}
+```
+
+## Design Patterns
+
+### 1. Dependency Injection
+Using Spring's `@RequiredArgsConstructor` and constructor injection for loose coupling.
+
+### 2. Repository Pattern
+Abstracting data access logic through Spring Data JPA repositories.
+
+### 3. DTO Pattern
+Separating internal entity models from API contracts.
+
+### 4. Mapper Pattern
+Converting between entities and DTOs using dedicated mapper classes.
+
+### 5. Service Layer Pattern
+Encapsulating business logic in service classes.
+
+### 6. Exception Handler Pattern
+Centralized exception handling with `@RestControllerAdvice`.
+
+## Key Benefits
+
+<CardGroup cols={2}>
+  <Card title="Maintainability" icon="wrench">
+    Clear separation of concerns makes the codebase easy to understand and modify.
+  </Card>
+  <Card title="Testability" icon="flask">
+    Each layer can be tested independently with mocks.
+  </Card>
+  <Card title="Scalability" icon="chart-line">
+    New features can be added without affecting existing code.
+  </Card>
+  <Card title="Consistency" icon="check">
+    Standard patterns ensure uniform code across all endpoints.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<Card title="Database Schema" icon="database" href="/core-concepts/database-schema">
+  Learn about the database structure and relationships
+</Card>

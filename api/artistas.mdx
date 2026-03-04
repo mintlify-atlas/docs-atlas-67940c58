@@ -1,0 +1,312 @@
+---
+title: "Artistas API"
+description: "API endpoints for managing artists (artistas) in the Cinefinder application"
+---
+
+The Artistas API allows you to create, read, update, and delete artist records in the Cinefinder system.
+
+## Get All Artists
+
+<CodeGroup>
+```bash cURL
+curl -X GET http://localhost:8080/artistas
+```
+</CodeGroup>
+
+Retrieves a list of all artists in the system.
+
+### Response
+
+<ResponseField name="[]" type="array">
+  Array of artist objects
+  
+  <Expandable title="Artist Object">
+    <ResponseField name="dni" type="long">
+      Unique identifier (DNI) for the artist
+    </ResponseField>
+    
+    <ResponseField name="nombre" type="string">
+      First name of the artist
+    </ResponseField>
+    
+    <ResponseField name="apellido" type="string">
+      Last name of the artist
+    </ResponseField>
+    
+    <ResponseField name="tipo" type="string">
+      Type or category of the artist (e.g., actor, director, musician)
+    </ResponseField>
+    
+    <ResponseField name="descripcion" type="string">
+      Description or biography of the artist
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Response Example
+
+```json
+[
+  {
+    "dni": 12345678,
+    "nombre": "Pedro",
+    "apellido": "Almodóvar",
+    "tipo": "Director",
+    "descripcion": "Renowned Spanish film director"
+  }
+]
+```
+
+---
+
+## Get Artist by DNI
+
+<CodeGroup>
+```bash cURL
+curl -X GET http://localhost:8080/artistas/{dni}
+```
+</CodeGroup>
+
+Retrieves a specific artist by their DNI (identification number).
+
+### Path Parameters
+
+<ParamField path="dni" type="long" required>
+  The DNI (identification number) of the artist to retrieve
+</ParamField>
+
+### Response
+
+<ResponseField name="dni" type="long">
+  Unique identifier (DNI) for the artist
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  First name of the artist
+</ResponseField>
+
+<ResponseField name="apellido" type="string">
+  Last name of the artist
+</ResponseField>
+
+<ResponseField name="tipo" type="string">
+  Type or category of the artist
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description or biography of the artist
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "dni": 12345678,
+  "nombre": "Pedro",
+  "apellido": "Almodóvar",
+  "tipo": "Director",
+  "descripcion": "Renowned Spanish film director"
+}
+```
+
+---
+
+## Create Artist
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://localhost:8080/artistas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dni": 87654321,
+    "nombre": "Penélope",
+    "apellido": "Cruz",
+    "tipo": "Actress",
+    "descripcion": "Award-winning Spanish actress"
+  }'
+```
+</CodeGroup>
+
+Creates a new artist in the system.
+
+### Request Body
+
+<ParamField body="dni" type="long" required>
+  Unique identifier (DNI) for the artist
+</ParamField>
+
+<ParamField body="nombre" type="string" required>
+  First name of the artist
+</ParamField>
+
+<ParamField body="apellido" type="string" required>
+  Last name of the artist
+</ParamField>
+
+<ParamField body="tipo" type="string" required>
+  Type or category of the artist (e.g., actor, director, musician)
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Description or biography of the artist
+</ParamField>
+
+### Response
+
+Returns the created artist object with HTTP status 201 (Created).
+
+<ResponseField name="dni" type="long">
+  Unique identifier (DNI) for the artist
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  First name of the artist
+</ResponseField>
+
+<ResponseField name="apellido" type="string">
+  Last name of the artist
+</ResponseField>
+
+<ResponseField name="tipo" type="string">
+  Type or category of the artist
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description or biography of the artist
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "dni": 87654321,
+  "nombre": "Penélope",
+  "apellido": "Cruz",
+  "tipo": "Actress",
+  "descripcion": "Award-winning Spanish actress"
+}
+```
+
+---
+
+## Update Artist
+
+<CodeGroup>
+```bash cURL
+curl -X PUT http://localhost:8080/artistas/{dni} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dni": 87654321,
+    "nombre": "Penélope",
+    "apellido": "Cruz",
+    "tipo": "Actress",
+    "descripcion": "Updated description"
+  }'
+```
+</CodeGroup>
+
+Updates an existing artist.
+
+### Path Parameters
+
+<ParamField path="dni" type="long" required>
+  The DNI (identification number) of the artist to update
+</ParamField>
+
+### Request Body
+
+<ParamField body="dni" type="long" required>
+  Unique identifier (DNI) for the artist
+</ParamField>
+
+<ParamField body="nombre" type="string" required>
+  First name of the artist
+</ParamField>
+
+<ParamField body="apellido" type="string" required>
+  Last name of the artist
+</ParamField>
+
+<ParamField body="tipo" type="string" required>
+  Type or category of the artist
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Description or biography of the artist
+</ParamField>
+
+### Response
+
+Returns the updated artist object.
+
+<ResponseField name="dni" type="long">
+  Unique identifier (DNI) for the artist
+</ResponseField>
+
+<ResponseField name="nombre" type="string">
+  First name of the artist
+</ResponseField>
+
+<ResponseField name="apellido" type="string">
+  Last name of the artist
+</ResponseField>
+
+<ResponseField name="tipo" type="string">
+  Type or category of the artist
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description or biography of the artist
+</ResponseField>
+
+---
+
+## Delete Artist
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE http://localhost:8080/artistas/{dni}
+```
+</CodeGroup>
+
+Deletes an artist from the system.
+
+### Path Parameters
+
+<ParamField path="dni" type="long" required>
+  The DNI (identification number) of the artist to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="type" type="string">
+  Response type, always "Success"
+</ResponseField>
+
+<ResponseField name="code" type="string">
+  HTTP status code (200)
+</ResponseField>
+
+<ResponseField name="details" type="string">
+  Success message with the deleted artist DNI
+</ResponseField>
+
+<ResponseField name="location" type="string">
+  Request URI that was called
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Timestamp of the operation
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "type": "Success",
+  "code": "200",
+  "details": "el artista con el id: 12345678. fue eliminado correctamente.",
+  "location": "/artistas/12345678",
+  "timestamp": "2026-03-04T10:30:00"
+}
+```

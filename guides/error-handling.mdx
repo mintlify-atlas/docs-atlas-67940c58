@@ -1,0 +1,402 @@
+---
+title: 'Error Handling'
+description: 'Understand how errors are handled and returned in the Cinefinder API'
+---
+
+## Overview
+
+The Cinefinder API implements a centralized error handling system using Spring's `@RestControllerAdvice`. All exceptions are caught and transformed into consistent error responses with detailed information.
+
+## Error Response Format
+
+All errors follow a consistent JSON structure defined in `ErrorResponse`:
+
+```json
+{
+  "type": "error",
+  "code": "404",
+  "details": "No se encontró la película con el título: Inception",
+  "location": "uri=/peliculas/Inception",
+  "moreInfo": "No se encontró en la ruta: /peliculas/Inception",
+  "timestamp": "2026-03-04T10:30:45.123"
+}
+```
+
+### Response Fields
+
+<ResponseField name="type" type="string">
+  Always returns `"error"` to indicate an error response
+</ResponseField>
+
+<ResponseField name="code" type="string">
+  HTTP status code as a string (e.g., "400", "404", "500")
+</ResponseField>
+
+<ResponseField name="details" type="string">
+  Detailed error message describing what went wrong
+</ResponseField>
+
+<ResponseField name="location" type="string">
+  The URI or request path where the error occurred
+</ResponseField>
+
+<ResponseField name="moreInfo" type="string">
+  Additional context or helpful information about the error
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  ISO 8601 timestamp when the error occurred
+</ResponseField>
+
+## Exception Hierarchy
+
+### Base Exceptions
+
+The API defines custom exception classes that extend `RuntimeException`:
+
+#### RecursoNoEncontradoException
+
+**HTTP Status:** 404 NOT FOUND
+
+Thrown when a requested resource cannot be found.
+
+```java
+throw new RecursoNoEncontradoException("No se encontró la película con id: " + id);
+```
+
+**Example Response:**
+
+```json
+{
+  "type": "error",
+  "code": "404",
+  "details": "No se encontró la película con id: 123",
+  "location": "uri=/peliculas/123",
+  "moreInfo": "No se encontró en la ruta: /peliculas/123",
+  "timestamp": "2026-03-04T10:30:45.123"
+}
+```
+
+#### ValidacionException
+
+**HTTP Status:** 400 BAD REQUEST (when handled)
+
+Thrown when validation logic fails.
+
+```java
+throw new ValidacionException("Los datos proporcionados no son válidos");
+```
+
+### Domain-Specific Exceptions
+
+The API implements specific exceptions for each domain entity:
+
+#### Película Exceptions
+
+<AccordionGroup>
+  <Accordion title="PeliculaTituloYaExistenteException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when attempting to create a película with a title that already exists.
+    
+    ```java
+    throw new PeliculaTituloYaExistenteException("Inception");
+    ```
+    
+    **Response:**
+    ```json
+    {
+      "type": "error",
+      "code": "400",
+      "details": "Ya existe una película con el titulo de: Inception, por favor, intente con otro distinto",
+      "location": "uri=/peliculas",
+      "moreInfo": "No se pudo ingresar una pelicula categoria error en: /peliculas",
+      "timestamp": "2026-03-04T10:30:45.123"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="PeliculaNoActualizadaException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when a película update operation fails.
+    
+    **Response:**
+    ```json
+    {
+      "type": "error",
+      "code": "400",
+      "details": "Error message",
+      "location": "uri=/peliculas/123",
+      "moreInfo": "No se pudo actualizar la pelicula error en: /peliculas/123",
+      "timestamp": "2026-03-04T10:30:45.123"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="PeliculaNoEliminadaException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when a película deletion operation fails.
+    
+    **Response:**
+    ```json
+    {
+      "type": "error",
+      "code": "400",
+      "details": "Error message",
+      "location": "uri=/peliculas/123",
+      "moreInfo": "No se pudo eliminar la categoria error en: /peliculas/123",
+      "timestamp": "2026-03-04T10:30:45.123"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+#### Categoría Exceptions
+
+<AccordionGroup>
+  <Accordion title="CategoriaNombreYaExistenteException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when attempting to create a category with a name that already exists.
+    
+    ```java
+    throw new CategoriaNombreYaExistenteException("Drama");
+    ```
+    
+    **Response:**
+    ```json
+    {
+      "type": "error",
+      "code": "400",
+      "details": "Ya existe una categoría con el nombre: Drama, por favor, intente con otro distinto",
+      "location": "uri=/categorias",
+      "moreInfo": "No se pudo ingresar una nueva categoria error en: /categorias",
+      "timestamp": "2026-03-04T10:30:45.123"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="CategoriaNoActualizadaException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when a category update operation fails.
+  </Accordion>
+
+  <Accordion title="CategoriaNoEliminadaException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when a category deletion operation fails.
+  </Accordion>
+</AccordionGroup>
+
+#### Artista Exceptions
+
+<AccordionGroup>
+  <Accordion title="ArtistaYaRegistradoException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when attempting to register an artist that already exists.
+    
+    **Response:**
+    ```json
+    {
+      "type": "error",
+      "code": "400",
+      "details": "Error message",
+      "location": "uri=/artistas",
+      "moreInfo": "No se pudo ingresar una pelicula categoria error en: /artistas",
+      "timestamp": "2026-03-04T10:30:45.123"
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="ArtistaNoActualizadoException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when an artist update operation fails.
+  </Accordion>
+
+  <Accordion title="ArtistaNoEliminadoException">
+    **Status:** 400 BAD REQUEST
+    
+    Thrown when an artist deletion operation fails.
+  </Accordion>
+</AccordionGroup>
+
+## Global Exception Handler
+
+The `GlobalExceptionHandler` class (located at `src/main/java/com/trainee/Cinefinder/exceptions/GlobalExceptionHandler.java`) intercepts all exceptions using `@RestControllerAdvice`.
+
+### Exception Handler Methods
+
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    
+    @ExceptionHandler(RecursoNoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handlerRecursoNoEncontrado(
+        RecursoNoEncontradoException ex, 
+        WebRequest request
+    ) {
+        ErrorResponse error = ErrorResponse.builder()
+            .code(String.valueOf(HttpStatus.NOT_FOUND))
+            .details(ex.getMessage())
+            .location(request.getDescription(true))
+            .moreInfo("No se encontró en la ruta: " + 
+                request.getDescription(false).replace("uri=", ""))
+            .timestamp(LocalDateTime.now())
+            .build();
+        
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+    
+    // ... other specific handlers
+    
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneralException(
+        Exception ex, 
+        WebRequest request
+    ) {
+        ErrorResponse error = ErrorResponse.builder()
+            .code("500")
+            .details(ex.getMessage())
+            .location(request.getDescription(false))
+            .moreInfo("Ocurrió un error inesperado")
+            .timestamp(LocalDateTime.now())
+            .build();
+        
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+```
+
+## HTTP Status Codes
+
+The API uses standard HTTP status codes:
+
+<ResponseField name="200 OK" type="success">
+  Request succeeded
+</ResponseField>
+
+<ResponseField name="201 CREATED" type="success">
+  Resource was successfully created
+</ResponseField>
+
+<ResponseField name="400 BAD REQUEST" type="error">
+  Invalid request data, duplicate resource, or business logic error
+</ResponseField>
+
+<ResponseField name="404 NOT FOUND" type="error">
+  Requested resource does not exist
+</ResponseField>
+
+<ResponseField name="500 INTERNAL SERVER ERROR" type="error">
+  Unexpected server error occurred
+</ResponseField>
+
+## Error Handling Best Practices
+
+<Tip>
+**Always check the HTTP status code** before parsing the response body. A 2xx status indicates success, while 4xx and 5xx indicate errors.
+</Tip>
+
+### Example: Handling Errors in Client Code
+
+```javascript
+try {
+  const response = await fetch('http://localhost:8080/peliculas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      titulo: 'Inception',
+      sipnosis: 'A thief who steals corporate secrets...',
+      duracion: 148,
+      categoria_id: 1
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Error:', error.details);
+    console.error('More info:', error.moreInfo);
+    // Handle specific error codes
+    if (error.code === '400') {
+      // Handle bad request (duplicate, validation, etc.)
+    }
+  } else {
+    const data = await response.json();
+    // Handle success
+  }
+} catch (error) {
+  console.error('Network error:', error);
+}
+```
+
+## Common Error Scenarios
+
+### Duplicate Resource
+
+**Request:**
+```bash
+curl -X POST "http://localhost:8080/peliculas" \
+  -H "Content-Type: application/json" \
+  -d '{"titulo":"Inception","sipnosis":"...","duracion":148,"categoria_id":1}'
+```
+
+**Response (400):**
+```json
+{
+  "type": "error",
+  "code": "400",
+  "details": "Ya existe una película con el titulo de: Inception, por favor, intente con otro distinto",
+  "location": "uri=/peliculas",
+  "moreInfo": "No se pudo ingresar una pelicula categoria error en: /peliculas",
+  "timestamp": "2026-03-04T10:30:45.123"
+}
+```
+
+### Resource Not Found
+
+**Request:**
+```bash
+curl -X GET "http://localhost:8080/peliculas/NonExistentMovie"
+```
+
+**Response (404):**
+```json
+{
+  "type": "error",
+  "code": "404",
+  "details": "No se encontró la película",
+  "location": "uri=/peliculas/NonExistentMovie",
+  "moreInfo": "No se encontró en la ruta: /peliculas/NonExistentMovie",
+  "timestamp": "2026-03-04T10:30:45.123"
+}
+```
+
+### Internal Server Error
+
+**Response (500):**
+```json
+{
+  "type": "error",
+  "code": "500",
+  "details": "Error message details",
+  "location": "uri=/endpoint",
+  "moreInfo": "Ocurrió un error inesperado",
+  "timestamp": "2026-03-04T10:30:45.123"
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Validation" icon="circle-check" href="/guides/validation">
+    Learn about request validation patterns
+  </Card>
+  <Card title="Authentication" icon="shield" href="/guides/authentication">
+    Understand authentication (future implementation)
+  </Card>
+</CardGroup>

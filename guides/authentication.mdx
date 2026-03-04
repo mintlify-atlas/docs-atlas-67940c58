@@ -1,0 +1,119 @@
+---
+title: 'Authentication'
+description: 'Learn about authentication in the Cinefinder API'
+---
+
+## Overview
+
+The Cinefinder API currently operates **without authentication requirements**. All endpoints are publicly accessible and do not require API keys, tokens, or other forms of authentication.
+
+## Current Implementation
+
+Based on the source code analysis:
+
+- No Spring Security configuration is present
+- No authentication filters or interceptors are implemented
+- All API endpoints are open and accessible without credentials
+- Controllers do not include authentication or authorization annotations
+
+### Example Request
+
+You can make requests directly to any endpoint without authentication headers:
+
+```bash
+curl -X GET "http://localhost:8080/peliculas"
+```
+
+```bash
+curl -X POST "http://localhost:8080/peliculas" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Inception",
+    "sipnosis": "A thief who steals corporate secrets...",
+    "duracion": 148,
+    "categoria_id": 1
+  }'
+```
+
+## Future Implementation Recommendations
+
+For production environments, we recommend implementing authentication using one of the following approaches:
+
+### Option 1: JWT Authentication
+
+Implement JSON Web Token (JWT) based authentication:
+
+```java
+// Add Spring Security dependency to pom.xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.11.5</version>
+</dependency>
+```
+
+With JWT, clients would need to:
+
+1. Authenticate with username/password to receive a token
+2. Include the token in subsequent requests
+
+```bash
+# Login to get token
+curl -X POST "http://localhost:8080/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"user","password":"pass"}'
+
+# Use token in requests
+curl -X GET "http://localhost:8080/peliculas" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+### Option 2: API Key Authentication
+
+Implement simple API key authentication:
+
+```bash
+curl -X GET "http://localhost:8080/peliculas" \
+  -H "X-API-Key: your-api-key-here"
+```
+
+### Option 3: OAuth 2.0
+
+For third-party integrations, consider OAuth 2.0:
+
+```java
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+</dependency>
+```
+
+## Security Considerations
+
+<Warning>
+Running an API without authentication in production is **not recommended** as it exposes your data to unauthorized access and potential abuse.
+</Warning>
+
+When implementing authentication, ensure:
+
+- All endpoints require authentication by default
+- Use HTTPS to encrypt data in transit
+- Implement rate limiting to prevent abuse
+- Store passwords securely using bcrypt or similar
+- Implement proper session management
+- Add authorization checks for sensitive operations
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/guides/error-handling">
+    Learn how errors are handled in the API
+  </Card>
+  <Card title="Validation" icon="circle-check" href="/guides/validation">
+    Understand request validation patterns
+  </Card>
+</CardGroup>

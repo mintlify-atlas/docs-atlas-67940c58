@@ -1,0 +1,302 @@
+---
+title: "Obras API"
+description: "API endpoints for managing theatrical works (obras) in the Cinefinder application"
+---
+
+The Obras API allows you to create, read, update, and delete theatrical work records in the Cinefinder system.
+
+## Get All Obras
+
+<CodeGroup>
+```bash cURL
+curl -X GET http://localhost:8080/Obras
+```
+</CodeGroup>
+
+Retrieves a list of all theatrical works in the system.
+
+### Response
+
+<ResponseField name="[]" type="array">
+  Array of obra objects
+  
+  <Expandable title="Obra Object">
+    <ResponseField name="id" type="integer">
+      Unique identifier for the theatrical work
+    </ResponseField>
+    
+    <ResponseField name="titulo" type="string">
+      Title of the theatrical work
+    </ResponseField>
+    
+    <ResponseField name="descripcion" type="string">
+      Description of the theatrical work
+    </ResponseField>
+    
+    <ResponseField name="duracion" type="integer">
+      Duration of the work in minutes
+    </ResponseField>
+    
+    <ResponseField name="categoria_id" type="integer">
+      ID of the category this work belongs to
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Response Example
+
+```json
+[
+  {
+    "id": 1,
+    "titulo": "Romeo y Julieta",
+    "descripcion": "Una tragedia clásica de Shakespeare",
+    "duracion": 120,
+    "categoria_id": 3
+  }
+]
+```
+
+---
+
+## Get Obra by Title
+
+<CodeGroup>
+```bash cURL
+curl -X GET http://localhost:8080/Obras/{titulo}
+```
+</CodeGroup>
+
+Retrieves a specific theatrical work by its title.
+
+### Path Parameters
+
+<ParamField path="titulo" type="string" required>
+  The title of the theatrical work to retrieve
+</ParamField>
+
+### Response
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the theatrical work
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the theatrical work
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description of the theatrical work
+</ResponseField>
+
+<ResponseField name="duracion" type="integer">
+  Duration of the work in minutes
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the category this work belongs to
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "id": 1,
+  "titulo": "Romeo y Julieta",
+  "descripcion": "Una tragedia clásica de Shakespeare",
+  "duracion": 120,
+  "categoria_id": 3
+}
+```
+
+---
+
+## Create Obra
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://localhost:8080/Obras \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Hamlet",
+    "descripcion": "La tragedia de Hamlet, príncipe de Dinamarca",
+    "duracion": 180,
+    "categoria_id": 3
+  }'
+```
+</CodeGroup>
+
+Creates a new theatrical work in the system.
+
+### Request Body
+
+<ParamField body="titulo" type="string" required>
+  Title of the theatrical work
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Description of the theatrical work
+</ParamField>
+
+<ParamField body="duracion" type="integer" required>
+  Duration of the work in minutes
+</ParamField>
+
+<ParamField body="categoria_id" type="integer" required>
+  ID of the category this work belongs to
+</ParamField>
+
+### Response
+
+Returns the created obra object with HTTP status 201 (Created).
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the newly created theatrical work
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the theatrical work
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description of the theatrical work
+</ResponseField>
+
+<ResponseField name="duracion" type="integer">
+  Duration of the work in minutes
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the category this work belongs to
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "id": 2,
+  "titulo": "Hamlet",
+  "descripcion": "La tragedia de Hamlet, príncipe de Dinamarca",
+  "duracion": 180,
+  "categoria_id": 3
+}
+```
+
+---
+
+## Update Obra
+
+<CodeGroup>
+```bash cURL
+curl -X PUT http://localhost:8080/Obras/{id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Hamlet",
+    "descripcion": "Updated description",
+    "duracion": 180,
+    "categoria_id": 3
+  }'
+```
+</CodeGroup>
+
+Updates an existing theatrical work.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the theatrical work to update
+</ParamField>
+
+### Request Body
+
+<ParamField body="titulo" type="string" required>
+  Title of the theatrical work
+</ParamField>
+
+<ParamField body="descripcion" type="string" required>
+  Description of the theatrical work
+</ParamField>
+
+<ParamField body="duracion" type="integer" required>
+  Duration of the work in minutes
+</ParamField>
+
+<ParamField body="categoria_id" type="integer" required>
+  ID of the category this work belongs to
+</ParamField>
+
+### Response
+
+Returns the updated obra object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the theatrical work
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the theatrical work
+</ResponseField>
+
+<ResponseField name="descripcion" type="string">
+  Description of the theatrical work
+</ResponseField>
+
+<ResponseField name="duracion" type="integer">
+  Duration of the work in minutes
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the category this work belongs to
+</ResponseField>
+
+---
+
+## Delete Obra
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE http://localhost:8080/Obras/{id}
+```
+</CodeGroup>
+
+Deletes a theatrical work from the system.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the theatrical work to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="type" type="string">
+  Response type, always "Success"
+</ResponseField>
+
+<ResponseField name="code" type="string">
+  HTTP status code (200)
+</ResponseField>
+
+<ResponseField name="details" type="string">
+  Success message with the deleted obra ID
+</ResponseField>
+
+<ResponseField name="location" type="string">
+  Request URI that was called
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Timestamp of the operation
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "type": "Success",
+  "code": "200",
+  "details": "la obra con el id: 1. fue eliminada correctamente.",
+  "location": "/Obras/1",
+  "timestamp": "2026-03-04T10:30:00"
+}
+```

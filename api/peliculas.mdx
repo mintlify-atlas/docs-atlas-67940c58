@@ -1,0 +1,302 @@
+---
+title: "Peliculas API"
+description: "API endpoints for managing movies (películas) in the Cinefinder application"
+---
+
+The Peliculas API allows you to create, read, update, and delete movie records in the Cinefinder system.
+
+## Get All Movies
+
+<CodeGroup>
+```bash cURL
+curl -X GET http://localhost:8080/peliculas
+```
+</CodeGroup>
+
+Retrieves a list of all movies in the system.
+
+### Response
+
+<ResponseField name="[]" type="array">
+  Array of movie objects
+  
+  <Expandable title="Movie Object">
+    <ResponseField name="id" type="integer">
+      Unique identifier for the movie
+    </ResponseField>
+    
+    <ResponseField name="titulo" type="string">
+      Title of the movie
+    </ResponseField>
+    
+    <ResponseField name="sipnosis" type="string">
+      Synopsis or description of the movie
+    </ResponseField>
+    
+    <ResponseField name="duracion" type="integer">
+      Duration of the movie in minutes
+    </ResponseField>
+    
+    <ResponseField name="categoria_id" type="integer">
+      ID of the category this movie belongs to
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Response Example
+
+```json
+[
+  {
+    "id": 1,
+    "titulo": "The Shawshank Redemption",
+    "sipnosis": "Two imprisoned men bond over a number of years",
+    "duracion": 142,
+    "categoria_id": 1
+  }
+]
+```
+
+---
+
+## Get Movie by Title
+
+<CodeGroup>
+```bash cURL
+curl -X GET http://localhost:8080/peliculas/{titulo}
+```
+</CodeGroup>
+
+Retrieves a specific movie by its title.
+
+### Path Parameters
+
+<ParamField path="titulo" type="string" required>
+  The title of the movie to retrieve
+</ParamField>
+
+### Response
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the movie
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the movie
+</ResponseField>
+
+<ResponseField name="sipnosis" type="string">
+  Synopsis or description of the movie
+</ResponseField>
+
+<ResponseField name="duracion" type="integer">
+  Duration of the movie in minutes
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the category this movie belongs to
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "id": 1,
+  "titulo": "The Shawshank Redemption",
+  "sipnosis": "Two imprisoned men bond over a number of years",
+  "duracion": 142,
+  "categoria_id": 1
+}
+```
+
+---
+
+## Create Movie
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://localhost:8080/peliculas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Inception",
+    "sipnosis": "A thief who steals corporate secrets",
+    "duracion": 148,
+    "categoria_id": 2
+  }'
+```
+</CodeGroup>
+
+Creates a new movie in the system.
+
+### Request Body
+
+<ParamField body="titulo" type="string" required>
+  Title of the movie
+</ParamField>
+
+<ParamField body="sipnosis" type="string" required>
+  Synopsis or description of the movie
+</ParamField>
+
+<ParamField body="duracion" type="integer" required>
+  Duration of the movie in minutes
+</ParamField>
+
+<ParamField body="categoria_id" type="integer" required>
+  ID of the category this movie belongs to
+</ParamField>
+
+### Response
+
+Returns the created movie object with HTTP status 201 (Created).
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the newly created movie
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the movie
+</ResponseField>
+
+<ResponseField name="sipnosis" type="string">
+  Synopsis or description of the movie
+</ResponseField>
+
+<ResponseField name="duracion" type="integer">
+  Duration of the movie in minutes
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the category this movie belongs to
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "id": 2,
+  "titulo": "Inception",
+  "sipnosis": "A thief who steals corporate secrets",
+  "duracion": 148,
+  "categoria_id": 2
+}
+```
+
+---
+
+## Update Movie
+
+<CodeGroup>
+```bash cURL
+curl -X PUT http://localhost:8080/peliculas/{id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Inception",
+    "sipnosis": "Updated synopsis",
+    "duracion": 148,
+    "categoria_id": 2
+  }'
+```
+</CodeGroup>
+
+Updates an existing movie.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the movie to update
+</ParamField>
+
+### Request Body
+
+<ParamField body="titulo" type="string" required>
+  Title of the movie
+</ParamField>
+
+<ParamField body="sipnosis" type="string" required>
+  Synopsis or description of the movie
+</ParamField>
+
+<ParamField body="duracion" type="integer" required>
+  Duration of the movie in minutes
+</ParamField>
+
+<ParamField body="categoria_id" type="integer" required>
+  ID of the category this movie belongs to
+</ParamField>
+
+### Response
+
+Returns the updated movie object.
+
+<ResponseField name="id" type="integer">
+  Unique identifier for the movie
+</ResponseField>
+
+<ResponseField name="titulo" type="string">
+  Title of the movie
+</ResponseField>
+
+<ResponseField name="sipnosis" type="string">
+  Synopsis or description of the movie
+</ResponseField>
+
+<ResponseField name="duracion" type="integer">
+  Duration of the movie in minutes
+</ResponseField>
+
+<ResponseField name="categoria_id" type="integer">
+  ID of the category this movie belongs to
+</ResponseField>
+
+---
+
+## Delete Movie
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE http://localhost:8080/peliculas/{id}
+```
+</CodeGroup>
+
+Deletes a movie from the system.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  The unique identifier of the movie to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="type" type="string">
+  Response type, always "Success"
+</ResponseField>
+
+<ResponseField name="code" type="string">
+  HTTP status code (200)
+</ResponseField>
+
+<ResponseField name="details" type="string">
+  Success message with the deleted movie ID
+</ResponseField>
+
+<ResponseField name="location" type="string">
+  Request URI that was called
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Timestamp of the operation
+</ResponseField>
+
+### Response Example
+
+```json
+{
+  "type": "Success",
+  "code": "200",
+  "details": "la pelicula con el id: 1. fue eliminada correctamente.",
+  "location": "/peliculas/1",
+  "timestamp": "2026-03-04T10:30:00"
+}
+```

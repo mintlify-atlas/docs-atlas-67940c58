@@ -1,80 +1,422 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get up and running with Cinefinder API in minutes - from setup to your first API call
 ---
 
-## Get started in three steps
+# Quickstart Guide
 
-Get your documentation site running locally and make your first customization.
+This guide will help you set up and run Cinefinder API locally, then make your first API calls to manage movies, artists, and events.
 
-### Step 1: Set up your local environment
+## Prerequisites
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+Before you begin, ensure you have the following installed:
 
-### Step 2: Deploy your changes
+- **Java 21** or higher ([Download](https://www.oracle.com/java/technologies/downloads/))
+- **MySQL 8.0+** ([Download](https://dev.mysql.com/downloads/mysql/))
+- **Maven 3.6+** (or use the included Maven wrapper)
+- **Git** for cloning the repository
+- **cURL** or **Postman** for testing API endpoints
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+## Installation
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+### Step 1: Clone the Repository
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+```bash
+git clone <repository-url>
+cd Cinefinder
+```
 
-### Step 3: Go live
+### Step 2: Set Up MySQL Database
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+Create the database and populate it with initial data:
 
-## Next steps
+```bash
+mysql -u root -p < BD_CINES.sql
+```
 
-Now that you have your docs running, explore these key features:
+This creates the `CINES` database with:
+- 12 categories (Action, Comedy, Drama, etc.)
+- 12 artists (actors, singers, dancers)
+- 12 movies
+- 12 theater works
+- 12 urban events
+- Artist participations
 
-<CardGroup cols={2}>
+### Step 3: Configure Database Connection
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+The default configuration in `src/main/resources/application.properties` is:
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+```properties
+spring.application.name=Cinefinder
+spring.datasource.url=jdbc:mysql://localhost:3306/cines
+spring.datasource.username=root
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+```
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+Update the `username` and `password` if your MySQL configuration differs.
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+### Step 4: Build the Application
 
-</CardGroup>
+Using the Maven wrapper (recommended):
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+```bash
+./mvnw clean install
+```
+
+Or with your local Maven installation:
+
+```bash
+mvn clean install
+```
+
+### Step 5: Run the Application
+
+```bash
+./mvnw spring-boot:run
+```
+
+Or:
+
+```bash
+mvn spring-boot:run
+```
+
+The API will start on `http://localhost:8080`
+
+You should see output indicating the application started successfully:
+
+```
+Started CinefinderApplication in X.XXX seconds
+```
+
+## Your First API Calls
+
+Now that the API is running, let's make some requests!
+
+### List All Movies
+
+Retrieve all movies in the database:
+
+```bash
+curl http://localhost:8080/peliculas
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "titulo": "El Último Viaje",
+    "sipnosis": "Una odisea espacial más allá del sistema solar",
+    "duracion": 120,
+    "categoria_id": 5
+  },
+  {
+    "id": 2,
+    "titulo": "Amor de Barrio",
+    "sipnosis": "Romance urbano entre dos mundos opuestos",
+    "duracion": 95,
+    "categoria_id": 6
+  }
+]
+```
+
+### Get a Movie by Title
+
+Search for a specific movie:
+
+```bash
+curl http://localhost:8080/peliculas/El%20Último%20Viaje
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "titulo": "El Último Viaje",
+  "sipnosis": "Una odisea espacial más allá del sistema solar",
+  "duracion": 120,
+  "categoria_id": 5
+}
+```
+
+### Create a New Movie
+
+Add a new movie to the catalog:
+
+```bash
+curl -X POST http://localhost:8080/peliculas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Nueva Aventura",
+    "sipnosis": "Una historia emocionante de acción y aventura",
+    "duracion": 115,
+    "categoria_id": 1
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 13,
+  "titulo": "Nueva Aventura",
+  "sipnosis": "Una historia emocionante de acción y aventura",
+  "duracion": 115,
+  "categoria_id": 1
+}
+```
+
+### Update a Movie
+
+Modify an existing movie:
+
+```bash
+curl -X PUT http://localhost:8080/peliculas/13 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Nueva Aventura",
+    "sipnosis": "Una historia épica de acción y aventura",
+    "duracion": 120,
+    "categoria_id": 1
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 13,
+  "titulo": "Nueva Aventura",
+  "sipnosis": "Una historia épica de acción y aventura",
+  "duracion": 120,
+  "categoria_id": 1
+}
+```
+
+### Delete a Movie
+
+Remove a movie from the catalog:
+
+```bash
+curl -X DELETE http://localhost:8080/peliculas/13
+```
+
+**Response (200 OK):**
+```json
+{
+  "details": "la pelicula con el id: 13. fue eliminada correctamente.",
+  "location": "/peliculas/13"
+}
+```
+
+## Working with Artists
+
+### List All Artists
+
+```bash
+curl http://localhost:8080/artistas
+```
+
+**Response:**
+```json
+[
+  {
+    "dni": 75839410,
+    "nombre": "Carlos",
+    "apellido": "Méndez",
+    "tipo": "Actor",
+    "descripcion": "Actor colombiano de cine y teatro"
+  },
+  {
+    "dni": 80427139,
+    "nombre": "Laura",
+    "apellido": "González",
+    "tipo": "Actriz",
+    "descripcion": "Actriz de drama y televisión"
+  }
+]
+```
+
+### Get Artist by DNI
+
+```bash
+curl http://localhost:8080/artistas/75839410
+```
+
+### Create a New Artist
+
+```bash
+curl -X POST http://localhost:8080/artistas \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dni": 12345678,
+    "nombre": "Ana",
+    "apellido": "Martínez",
+    "tipo": "Actriz",
+    "descripcion": "Actriz de teatro experimental"
+  }'
+```
+
+## Working with Urban Events
+
+### List All Events
+
+```bash
+curl http://localhost:8080/eventosUrbanos
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "titulo": "Festival de Callejeros",
+    "descripcion": "Evento masivo de arte urbano en espacios abiertos",
+    "fecha": "2025-07-10",
+    "lugar": "Plaza Bolívar",
+    "categoria_id": 1
+  }
+]
+```
+
+### Create a New Event
+
+```bash
+curl -X POST http://localhost:8080/eventosUrbanos \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Noche de Jazz",
+    "descripcion": "Concierto de jazz al aire libre",
+    "fecha": "2025-08-15",
+    "lugar": "Parque Central",
+    "categoria_id": 8
+  }'
+```
+
+## Working with Categories
+
+### List All Categories
+
+```bash
+curl http://localhost:8080/categorias
+```
+
+### Get Category by Name
+
+```bash
+curl http://localhost:8080/categorias/Acción
+```
+
+### Create a New Category
+
+```bash
+curl -X POST http://localhost:8080/categorias \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Western"
+  }'
+```
+
+## Working with Theater Works
+
+### List All Theater Works
+
+```bash
+curl http://localhost:8080/Obras
+```
+
+### Get Work by Title
+
+```bash
+curl http://localhost:8080/Obras/Voces%20Silenciadas
+```
+
+## API Endpoints Summary
+
+Here's a complete overview of available endpoints:
+
+| Resource | Method | Endpoint | Description |
+|----------|--------|----------|-------------|
+| **Movies** | GET | `/peliculas` | List all movies |
+| | GET | `/peliculas/{titulo}` | Get movie by title |
+| | POST | `/peliculas` | Create new movie |
+| | PUT | `/peliculas/{id}` | Update movie |
+| | DELETE | `/peliculas/{id}` | Delete movie |
+| **Artists** | GET | `/artistas` | List all artists |
+| | GET | `/artistas/{dni}` | Get artist by DNI |
+| | POST | `/artistas` | Create new artist |
+| | PUT | `/artistas/{dni}` | Update artist |
+| | DELETE | `/artistas/{dni}` | Delete artist |
+| **Events** | GET | `/eventosUrbanos` | List all events |
+| | GET | `/eventosUrbanos/{titulo}` | Get event by title |
+| | POST | `/eventosUrbanos` | Create new event |
+| | PUT | `/eventosUrbanos/{id}` | Update event |
+| | DELETE | `/eventosUrbanos/{id}` | Delete event |
+| **Works** | GET | `/Obras` | List all theater works |
+| | GET | `/Obras/{titulo}` | Get work by title |
+| | POST | `/Obras` | Create new work |
+| | PUT | `/Obras/{id}` | Update work |
+| | DELETE | `/Obras/{id}` | Delete work |
+| **Categories** | GET | `/categorias` | List all categories |
+| | GET | `/categorias/{nombre}` | Get category by name |
+| | POST | `/categorias` | Create new category |
+| | PUT | `/categorias/{id}` | Update category |
+| | DELETE | `/categorias/{id}` | Delete category |
+
+## Testing with Postman
+
+If you prefer using Postman:
+
+1. Create a new collection called "Cinefinder API"
+2. Set the base URL to `http://localhost:8080`
+3. Add requests for each endpoint
+4. For POST/PUT requests, set `Content-Type: application/json` header
+5. Use the JSON examples provided above in the request body
+
+## Common HTTP Status Codes
+
+- **200 OK**: Request successful
+- **201 Created**: Resource created successfully
+- **404 Not Found**: Resource doesn't exist
+- **400 Bad Request**: Invalid request data
+- **500 Internal Server Error**: Server error
+
+## Troubleshooting
+
+### Port Already in Use
+
+If port 8080 is already in use, change it in `application.properties`:
+
+```properties
+server.port=8081
+```
+
+### Database Connection Errors
+
+Ensure MySQL is running:
+
+```bash
+sudo systemctl status mysql
+```
+
+Verify credentials and database name in `application.properties`.
+
+### Build Failures
+
+Clean the Maven cache and rebuild:
+
+```bash
+./mvnw clean install -U
+```
+
+## Next Steps
+
+Now that you're up and running:
+
+- Explore the [Movies API](/api/peliculas) documentation
+- Learn about the [architecture](/core-concepts/architecture)
+- Understand the [database schema](/core-concepts/database-schema)
+- Check out [error handling](/guides/error-handling) best practices
+
+Happy coding!
